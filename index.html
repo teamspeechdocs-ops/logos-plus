@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LOGOS+ — Debate Evidence Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#f3ecd2;            /* warm parchment text on dark */
+    --paper:#0e1f17;          /* deep forest green background */
+    --paper-2:#162c20;        /* raised green panel */
+    --rule:#3c5142;           /* muted green border */
+    --accent:#d4af37;         /* gold */
+    --accent-2:#e8c860;       /* lighter gold for secondary text */
+    --shadow:rgba(0,0,0,.4); --muted:#9bae9c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(212,175,55,.10), transparent 42%),
+      radial-gradient(circle at 88% 8%, rgba(212,175,55,.06), transparent 45%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+    color:var(--ink); font-family:'IBM Plex Mono',monospace; min-height:100vh; line-height:1.5;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:48px 24px 96px}
+  header{border-bottom:3px double var(--ink);padding-bottom:18px;margin-bottom:8px}
+  .masthead{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(48px,9vw,92px);letter-spacing:-.03em;margin:0;line-height:.9}
+  h1 .plus{color:var(--accent);font-size:.55em;vertical-align:super}
+  .tag{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent-2)}
+  .dateline{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
+  .token-bar{margin:22px 0 10px;border:1px solid var(--rule);background:var(--paper-2);padding:14px 16px;border-radius:2px}
+  .token-bar.ok{border-color:var(--accent);background:#18301f}
+  .token-bar label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:8px;color:var(--muted)}
+  .token-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  input[type=password],input[type=text]{font-family:'IBM Plex Mono',monospace;font-size:15px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);padding:10px 12px;border-radius:2px;flex:1;min-width:200px}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .hint code{background:var(--paper);padding:1px 5px;border:1px solid var(--rule);border-radius:2px}
+
+  .search-block{margin:26px 0 8px}
+  .search-row{display:flex;gap:10px;flex-wrap:wrap}
+  .search-row input{font-size:18px;padding:14px 16px}
+  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;background:var(--accent);color:#0e1f17;border:none;padding:0 26px;border-radius:2px;transition:transform .08s ease, background .15s ease}
+  button:hover{background:var(--accent-2)}
+  button:active{transform:translateY(1px)}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+  button.ghost:hover{background:var(--paper-2);color:var(--ink)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+
+  .shard-block{margin-top:14px;border:1px solid var(--rule);background:var(--paper-2);padding:14px 16px;border-radius:2px}
+  .shard-block .lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .shard-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  select{font-family:'IBM Plex Mono',monospace;font-size:14px;padding:9px 10px;border:1px solid var(--rule);background:var(--paper);border-radius:2px;color:var(--ink)}
+  .yearpills{display:flex;gap:6px;flex-wrap:wrap}
+  .yearpills .yp{font-size:12px;padding:6px 11px;border:1px solid var(--rule);border-radius:999px;cursor:pointer;background:var(--paper);user-select:none}
+  .yearpills .yp.on{background:var(--accent);color:#0e1f17;border-color:var(--accent)}
+  .yearpills .yp.disabled{opacity:.4;cursor:not-allowed}
+  .evt{display:inline-flex;align-items:center;gap:7px;font-size:14px;cursor:pointer;user-select:none;border:1px solid var(--rule);background:var(--paper);padding:8px 13px;border-radius:2px}
+  
+  .evt input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+  .capnote{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .computed{font-size:11px;color:var(--muted);margin-top:10px}
+  .computed b{color:var(--accent-2);font-style:normal}
+
+  .status{font-size:13px;letter-spacing:.04em;margin:20px 0;color:var(--muted);min-height:20px}
+  .status.err{color:var(--accent)}
+
+  .results{margin-top:8px;display:flex;flex-direction:column;gap:0}
+  .card{border-top:1px solid var(--rule);padding:22px 2px;animation:rise .4s ease both}
+  .card:last-child{border-bottom:1px solid var(--rule)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .card .meta{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-2);margin-bottom:8px;align-items:center}
+  .card .meta .pill{border:1px solid var(--rule);padding:2px 8px;border-radius:999px}
+  .card h3{font-family:'Fraunces',serif;font-weight:600;font-size:19px;margin:0 0 8px;line-height:1.25;word-break:break-word}
+  
+  .card h3 a{color:var(--ink);text-decoration:none;background-image:linear-gradient(var(--accent),var(--accent));background-size:0% 1.5px;background-repeat:no-repeat;background-position:0 100%;transition:background-size .25s}
+  .card h3 a:hover{background-size:100% 1.5px;color:var(--accent)}
+  
+  .card .snip{font-size:14px;color:#d8d0b8;line-height:1.6;white-space:pre-wrap}
+  .card .snip mark{background:var(--accent);color:#0e1f17;padding:0 1px;border-radius:2px}
+  .card .more{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-2);cursor:pointer;margin-top:6px;display:inline-block}
+
+  .empty{text-align:center;padding:60px 20px;color:var(--muted)}
+  .empty .big{font-family:'Fraunces',serif;font-size:32px;color:var(--rule)}
+
+  footer{margin-top:60px;border-top:1px solid var(--rule);padding-top:16px;font-size:11px;color:var(--muted);letter-spacing:.06em;line-height:1.7}
+  footer a{color:var(--accent-2)}
+  .spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--rule);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="masthead">
+      <h1>LOGOS<span class="plus">+</span></h1>
+      <span class="tag">Evidence&nbsp;Search</span>
+    </div>
+    <div class="dateline">Live index · openCaselist · full-text cites &amp; open-source docs</div>
+  </header>
+
+  <div class="token-bar" id="tokenBar">
+    <label for="token">caselist_token</label>
+    <div class="token-row">
+      <input id="token" type="password" placeholder="Paste your caselist_token cookie value…" autocomplete="off" />
+      <button class="ghost" id="saveToken" type="button">Save</button>
+      <button class="ghost" id="clearToken" type="button">Clear</button>
+    </div>
+    <div class="hint">
+      Stored only in this browser tab, sent to the proxy per-search, never to the static site.
+      Get it logged in at <code>opencaselist.com</code>: DevTools → Application → Cookies → copy <code>caselist_token</code>.
+    </div>
+  </div>
+
+  <div class="search-block">
+    <div class="search-row">
+      <input id="q" type="text" placeholder="Search tags, cites, evidence text…" />
+      <button id="go" type="button">Search</button>
+    </div>
+
+    <div class="shard-block">
+      <div class="lbl">Events</div>
+      <div class="shard-controls" id="eventBoxes">
+        <label class="evt"><input type="checkbox" id="evHspolicy" checked /> HS Policy</label>
+        <label class="evt"><input type="checkbox" id="evNdtceda" checked /> College Policy (NDT/CEDA)</label>
+      </div>
+      <div class="lbl" style="margin-top:14px;display:flex;align-items:center;gap:12px">Seasons
+        <span class="capnote">pick up to 3</span>
+      </div>
+      <div class="shard-controls">
+        <div class="yearpills" id="yearpills"></div>
+      </div>
+      <div class="computed">Searching: <b id="computed">—</b></div>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div class="results" id="results"></div>
+
+  <footer>
+    Queries the official openCaselist API (<code>GET /search?q=&amp;shard=</code>), full-text Solr index refreshed hourly.
+    Searches HS Policy and College Policy across the last five seasons (up to three at a time); requests are throttled
+    to stay courteous to opencaselist's community server. Result links open on opencaselist.com.
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const tokenInput=$('#token'), qInput=$('#q'), statusEl=$('#status'),
+        resultsEl=$('#results'), tokenBar=$('#tokenBar'),
+        yearpills=$('#yearpills'), computedEl=$('#computed'),
+        evHs=$('#evHspolicy'), evCo=$('#evNdtceda');
+
+  // ---- seasons ----
+  // Shards are named event + 2-digit START year (2025–26 season = "25").
+  // The newest searchable season auto-rolls by date: a new season starts in
+  // the summer, so from ~July onward the current calendar year is the newest
+  // season. We show only the last 5 seasons, and cap selection at 3 to stay
+  // light on opencaselist's server.
+  const MAX_PICK = 3;
+  const WINDOW = 5;
+  const NOW = new Date();
+  // July (month index 6) is the rollover point to the new season.
+  const newestStart = (NOW.getMonth() >= 6) ? NOW.getFullYear() : NOW.getFullYear() - 1;
+  const years = [];
+  for(let y = newestStart; y > newestStart - WINDOW; y--) years.push(y);
+  const selectedYears = new Set([newestStart]); // default: current season
+
+  function yy(y){ return String(y).slice(-2); }
+  function selectedEvents(){
+    const evs=[];
+    if(evHs.checked) evs.push('hspolicy');
+    if(evCo.checked) evs.push('ndtceda');
+    return evs;
+  }
+  function renderPills(){
+    yearpills.innerHTML='';
+    const atCap = selectedYears.size >= MAX_PICK;
+    years.forEach(y=>{
+      const el=document.createElement('span');
+      const on = selectedYears.has(y);
+      const blocked = atCap && !on;
+      el.className='yp'+(on?' on':'')+(blocked?' disabled':'');
+      el.textContent = y+'–'+yy(y+1);
+      el.title = blocked ? 'Up to 3 seasons at a time' : '';
+      el.onclick=()=>{
+        if(on){ selectedYears.delete(y); }
+        else { if(selectedYears.size>=MAX_PICK) return; selectedYears.add(y); }
+        if(selectedYears.size===0) selectedYears.add(y); // never empty
+        renderPills(); updateComputed();
+      };
+      yearpills.appendChild(el);
+    });
+  }
+  function shardsForSelection(){
+    const evs=selectedEvents();
+    const ys=[...selectedYears].sort((a,b)=>b-a);
+    const out=[];
+    evs.forEach(ev=>ys.forEach(y=>out.push(ev+yy(y))));
+    return out;
+  }
+  function updateComputed(){
+    const s=shardsForSelection();
+    computedEl.textContent = s.length ? s.join(', ') : '— pick at least one event —';
+  }
+  evHs.onchange=updateComputed; evCo.onchange=updateComputed;
+  renderPills(); updateComputed();
+
+  // ---- token ----
+  const TKEY='caselist_token';
+  (function load(){ const t=sessionStorage.getItem(TKEY); if(t){tokenInput.value=t;tokenBar.classList.add('ok');} })();
+  $('#saveToken').onclick=()=>{const t=tokenInput.value.trim();if(t){sessionStorage.setItem(TKEY,t);tokenBar.classList.add('ok');setStatus('Token saved for this session.');}};
+  $('#clearToken').onclick=()=>{sessionStorage.removeItem(TKEY);tokenInput.value='';tokenBar.classList.remove('ok');setStatus('Token cleared.');};
+
+  function setStatus(msg,isErr){statusEl.className='status'+(isErr?' err':'');statusEl.innerHTML=msg;}
+  function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+  function highlight(text,q){
+    const safe=escapeHtml(text);
+    if(!q) return safe;
+    const terms=q.split(/\s+/).filter(t=>t.length>2).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+    if(!terms.length) return safe;
+    return safe.replace(new RegExp('('+terms.join('|')+')','gi'),'<mark>$1</mark>');
+  }
+
+  // Build an opencaselist.com link from a result's path.
+  function linkFor(r){
+    if(!r.path) return '';
+    if(/^https?:\/\//i.test(r.path)) return r.path;
+    const clean=String(r.path).replace(/^\/+/,'');
+    return 'https://opencaselist.com/'+clean;
+  }
+  // A readable title: last meaningful segment of the path, else the shard.
+  function titleFor(r){
+    if(r.path){
+      const parts=String(r.path).split('/').filter(Boolean);
+      if(parts.length) return decodeURIComponent(parts[parts.length-1]).replace(/[-_]/g,' ');
+    }
+    return r.shard || '(result)';
+  }
+
+  // API returns an array of {id, shard, content, path}; tolerate a wrapper too.
+  function normalize(data){
+    let rows=[];
+    if(Array.isArray(data)) rows=data;
+    else if(data&&Array.isArray(data.results)) rows=data.results;
+    else if(data&&Array.isArray(data.docs)) rows=data.docs;
+    return rows.map(r=>({
+      id:r.id, shard:r.shard||'', content:r.content||r.text||'', path:r.path||r.url||''
+    }));
+  }
+
+  function render(rows,q){
+    resultsEl.innerHTML='';
+    if(!rows.length){
+      resultsEl.innerHTML='<div class="empty"><div class="big">∅</div><div>No results. Try another shard/season or broader terms.</div></div>';
+      return;
+    }
+    rows.forEach((r,i)=>{
+      const card=document.createElement('div');
+      card.className='card';
+      card.style.animationDelay=Math.min(i*25,300)+'ms';
+      const url=linkFor(r);
+      const titleHtml=url
+        ? '<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener">'+escapeHtml(titleFor(r))+'</a>'
+        : escapeHtml(titleFor(r));
+      const full=r.content||'';
+      const short=full.length>500?full.slice(0,500):full;
+      const snipHtml='<div class="snip" data-full="'+escapeHtml(full)+'">'+highlight(short,q)+(full.length>500?'…':'')+'</div>';
+      const moreHtml=full.length>500?'<span class="more">Show full text</span>':'';
+      card.innerHTML='<div class="meta"><span class="pill">'+escapeHtml(r.shard||'?')+'</span></div><h3>'+titleHtml+'</h3>'+snipHtml+moreHtml;
+      const more=card.querySelector('.more');
+      if(more){
+        let open=false;
+        more.onclick=()=>{
+          open=!open;
+          const snip=card.querySelector('.snip');
+          snip.innerHTML=highlight(open?full:short,q)+(!open&&full.length>500?'…':'');
+          more.textContent=open?'Show less':'Show full text';
+        };
+      }
+      resultsEl.appendChild(card);
+    });
+  }
+
+  async function fetchShard(q,shard,token){
+    const res=await fetch('/api/search?'+new URLSearchParams({q,shard}),{headers:{'x-caselist-token':token}});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok){
+      const msg=(data&&data.message)?data.message:('Search failed ('+res.status+')');
+      const err=new Error(msg); err.status=res.status; throw err;
+    }
+    return normalize(data).map(r=>({...r,shard:r.shard||shard}));
+  }
+
+  // --- Polite request throttling ---------------------------------------
+  // opencaselist runs a community server with its own rate limiters, so we
+  // deliberately avoid hammering it: at most CONCURRENCY requests in flight,
+  // with a GAP_MS pause between launches. Searches are also debounced so
+  // rapid re-queries don't stack. This keeps us a well-behaved client.
+  const CONCURRENCY = 3;
+  const GAP_MS = 150;
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+  async function runThrottled(shards, q, token, onProgress){
+    const results=[]; let firstErr=null; let done=0;
+    let idx=0;
+    async function worker(){
+      while(idx<shards.length){
+        const my=idx++;
+        try{ results.push(...await fetchShard(q, shards[my], token)); }
+        catch(e){ if(!firstErr) firstErr=e; }
+        done++; onProgress(done, shards.length);
+      }
+    }
+    // Launch up to CONCURRENCY workers, staggered by GAP_MS.
+    const workers=[];
+    for(let i=0;i<Math.min(CONCURRENCY,shards.length);i++){
+      await sleep(GAP_MS);
+      workers.push(worker());
+    }
+    await Promise.all(workers);
+    return { results, firstErr };
+  }
+
+  let searching=false;
+  async function search(){
+    if(searching) return;                 // debounce: ignore re-entry mid-search
+    const q=qInput.value.trim();
+    const token=(sessionStorage.getItem(TKEY)||tokenInput.value).trim();
+    if(!q){setStatus('Type something to search.');return;}
+    if(!token){setStatus('Paste and save your caselist_token first.',true);tokenInput.focus();return;}
+    const shards=shardsForSelection();
+    if(!shards.length){setStatus('Pick at least one event (HS Policy or College Policy).',true);return;}
+
+    searching=true; $('#go').disabled=true;
+    resultsEl.innerHTML='';
+    const label=shards.join(', ');
+    setStatus('<span class="spinner"></span>Searching '+label+'…');
+    try{
+      const {results,firstErr}=await runThrottled(shards,q,token,(done,total)=>{
+        if(total>3) setStatus('<span class="spinner"></span>Searching… '+done+' / '+total);
+      });
+      if(results.length===0 && firstErr){
+        const extra=firstErr.status===401?' — token may have expired; log in again and re-copy it.':'';
+        setStatus(escapeHtml(firstErr.message)+extra,true); return;
+      }
+      const note=firstErr?' (some caselists errored or were empty)':'';
+      setStatus(results.length+' result'+(results.length===1?'':'s')+' for “'+escapeHtml(q)+'” across '+label+note+'.');
+      render(results,q);
+    }catch(err){
+      setStatus('Network error reaching the proxy. If local, run `netlify dev` (not a plain file open).',true);
+    }finally{
+      searching=false; $('#go').disabled=false;
+    }
+  }
+
+  $('#go').onclick=search;
+  qInput.addEventListener('keydown',e=>{if(e.key==='Enter')search();});
+})();
+</script>
+</body>
+</html>
